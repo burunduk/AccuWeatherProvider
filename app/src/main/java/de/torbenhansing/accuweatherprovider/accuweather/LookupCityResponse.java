@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.lineageos.openweathermapprovider.openweathermap;
+package de.torbenhansing.accuweatherprovider.accuweather;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -25,34 +25,8 @@ import java.util.List;
 public class LookupCityResponse implements Serializable {
 
     @SerializedName("list")
-    private List<CityInfo> cities;
-    static class CityInfo {
-        private String id = "";
-        private String name = "";
-        private Sys sys;
-
-        static class Sys {
-            private String country = "";
-        }
-
-        public String getCityId() {
-            return id;
-        }
-
-        public String getCityName() {
-            return name;
-        }
-
-        public String getCountry() {
-            if (sys != null) {
-                return sys.country;
-            } else {
-                return "";
-            }
-        }
-    }
-
-    public List<CityInfo> getCityInfoList() {
+    private List<CityInfoResponse> cities;
+    public List<CityInfoResponse> getCityInfoList() {
         if (cities == null) {
             //Return empty list to prevent NPE
             return new ArrayList<>();

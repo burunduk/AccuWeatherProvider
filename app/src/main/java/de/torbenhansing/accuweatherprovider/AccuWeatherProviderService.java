@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.lineageos.openweathermapprovider;
+package de.torbenhansing.accuweatherprovider;
 
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -22,8 +22,8 @@ import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 
-import org.lineageos.openweathermapprovider.openweathermap.OpenWeatherMapService;
-import org.lineageos.openweathermapprovider.utils.Logging;
+import de.torbenhansing.accuweatherprovider.accuweather.AccuWeatherService;
+import de.torbenhansing.accuweatherprovider.utils.Logging;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +37,7 @@ import cyanogenmod.weatherservice.ServiceRequest;
 import cyanogenmod.weatherservice.ServiceRequestResult;
 import cyanogenmod.weatherservice.WeatherProviderService;
 
-public class OpenWeatherMapProviderService extends WeatherProviderService
+public class AccuWeatherProviderService extends WeatherProviderService
         implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String API_KEY = "api_key";
@@ -46,7 +46,7 @@ public class OpenWeatherMapProviderService extends WeatherProviderService
     private static final int API_KEY_INVALID = 0;
     private static final int API_KEY_VERIFIED = 2;
 
-    private OpenWeatherMapService mOpenWeatherMapService;
+    private AccuWeatherService mAccuWeatherService;
 
     private Map<ServiceRequest,WeatherUpdateRequestTask> mWeatherUpdateRequestMap = new HashMap<>();
     private Map<ServiceRequest,LookupCityNameRequestTask> mLookupCityRequestMap = new HashMap<>();
@@ -60,7 +60,7 @@ public class OpenWeatherMapProviderService extends WeatherProviderService
 
     @Override
     public void onCreate() {
-        mOpenWeatherMapService = new OpenWeatherMapService(this);
+        mAccuWeatherService = new AccuWeatherService(this);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class OpenWeatherMapProviderService extends WeatherProviderService
                 = PreferenceManager.getDefaultSharedPreferences(this);
         preferences.registerOnSharedPreferenceChangeListener(this);
         final String mApiId = preferences.getString(API_KEY, null);
-        mOpenWeatherMapService.setApiKey(mApiId);
+        mAccuWeatherService.setApiKey(mApiId);
     }
 
     @Override
@@ -147,7 +147,7 @@ public class OpenWeatherMapProviderService extends WeatherProviderService
         if (key.equals(API_KEY)) {
             Logging.logd("API key has changed");
             final String mApiKey = sharedPreferences.getString(key, null);
-            mOpenWeatherMapService.setApiKey(mApiKey);
+            mAccuWeatherService.setApiKey(mApiKey);
         }
     }
     private boolean isSameWeatherLocation(WeatherLocation newLocation,
@@ -187,15 +187,15 @@ public class OpenWeatherMapProviderService extends WeatherProviderService
             int requestType = requestInfo.getRequestType();
             if (requestType == RequestInfo.TYPE_WEATHER_BY_WEATHER_LOCATION_REQ) {
                 try {
-                    return mOpenWeatherMapService.queryWeather(requestInfo.getWeatherLocation());
-                } catch (OpenWeatherMapService.InvalidApiKeyException e) {
+                    return mAccuWeatherService.queryWeather(requestInfo.getWeatherLocation());
+                } catch (AccuWeatherService.InvalidApiKeyException e) {
                     setApiKeyVerified(API_KEY_INVALID);
                     return null;
                 }
             } else if (requestType == RequestInfo.TYPE_WEATHER_BY_GEO_LOCATION_REQ) {
                 try {
-                    return mOpenWeatherMapService.queryWeather(requestInfo.getLocation());
-                } catch (OpenWeatherMapService.InvalidApiKeyException e) {
+                    return mAccuWeatherService.queryWeather(requestInfo.getLocation());
+                } catch (AccuWeatherService.InvalidApiKeyException e) {
                     setApiKeyVerified(API_KEY_INVALID);
                     return null;
                 }
@@ -245,8 +245,8 @@ public class OpenWeatherMapProviderService extends WeatherProviderService
                 return null;
             }
             try {
-                return mOpenWeatherMapService.lookupCity(mRequest.getRequestInfo().getCityName());
-            } catch (OpenWeatherMapService.InvalidApiKeyException e) {
+                return mAccuWeatherService.lookupCity(mRequest.getRequestInfo().getCityName());
+            } catch (AccuWeatherService.InvalidApiKeyException e) {
                 setApiKeyVerified(API_KEY_INVALID);
                 return null;
             }

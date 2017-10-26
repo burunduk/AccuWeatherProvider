@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.lineageos.openweathermapprovider.openweathermap;
+package de.torbenhansing.accuweatherprovider.accuweather;
 
 import com.google.gson.annotations.SerializedName;
 

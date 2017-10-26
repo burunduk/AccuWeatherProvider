@@ -16,7 +16,7 @@
      limitations under the License.
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name" translatable="false">OpenWeatherMap</string>
+    <string name="app_name" translatable="false">AccuWeather</string>
     <string name="prefscreen_category_authentication_title">Settings</string>
     <string name="prefscreen_category_about_title">About</string>
 
@@ -36,5 +36,5 @@
     <string name="prefscreen_disclaimer_title">Disclaimer</string>
     <string name="prefscreen_disclaimer_summary">The information provided by this application is provided for general information purposes only</string>
     <string name="copyright_title">Copyright</string>
-    <string name="copyright_summary">OpenWeatherMap is a registered trademark of OpenWeatherMap Inc, both in the United States and internationally</string>
+    <string name="copyright_summary">AccuWeather.com is a registered trademark of AccuWeather Inc, both in the United States and internationally</string>
 </resources>

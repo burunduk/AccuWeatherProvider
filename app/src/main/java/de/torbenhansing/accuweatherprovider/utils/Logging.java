@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.lineageos.openweathermapprovider.utils;
+package de.torbenhansing.accuweatherprovider.utils;
 
 import android.util.Log;
 
 public class Logging {
     private static final boolean DEBUG = false;
-    private static final String TAG = "OpenWeatherMapProvider";
+    private static final String TAG = "AccuWeatherProvider";
 
     public static final void logd(String log) {
         if (DEBUG) Log.d(TAG, log);
