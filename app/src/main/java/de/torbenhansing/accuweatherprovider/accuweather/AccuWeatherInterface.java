@@ -41,9 +41,7 @@ public interface AccuWeatherInterface {
     Call<LookupCityResponse> lookupCity(@Query("apiKey") String apiKey,
                                         @Query("q") String cityName,
                                         @Query("language") String lang,
-                                        @Query("details") boolean details,
-                                        @Query("offset") int offset,
-                                        @Query("alias") String alias
+                                        @Query("details") boolean details
     );
 
     @GET("/locations/v1/cities/geoposition/search")

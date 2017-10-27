@@ -16,73 +16,44 @@
 
 package de.torbenhansing.accuweatherprovider.accuweather;
 
-import com.google.gson.annotations.SerializedName;
-
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
-import cyanogenmod.providers.WeatherContract;
+class ForecastResponse implements Serializable {
+    private List<DailyForecast> DailyForecasts = null;
 
-public class ForecastResponse implements Serializable {
+    static class DailyForecast {
+        private Temperature Temperature = null;
+        private Day Day = null;
 
-    @SerializedName("list")
-    private List<DayForecast> forecastList;
-
-    public ForecastResponse() {}
-
-    static class DayForecast {
-
-        private List<Weather> weather;
-        private Temp temp;
-
-        public DayForecast() {}
-        static class Weather {
-            @SerializedName("id")
-            private int code = WeatherContract.WeatherColumns.WeatherCode.NOT_AVAILABLE;
-            private String icon;
-
-            public Weather() {}
+        static class Value {
+            private double Value = Double.NaN;
         }
 
-        static class Temp {
-            double min = Double.NaN;
-            double max = Double.NaN;
-
-            public Temp() {}
+        static class Temperature {
+            private Value Minimum = null;
+            private Value Maximum = null;
         }
 
-        public int getConditionCode() {
-            if (weather == null || weather.size() == 0) {
-                return WeatherContract.WeatherColumns.WeatherCode.NOT_AVAILABLE;
-            } else {
-                return weather.get(0).code;
-            }
+        static class Day {
+            private int Icon = 0;
         }
 
-        public String getWeatherIconId() {
-            if (weather == null || weather.size() == 0) {
-                return "";
-            } else {
-                return weather.get(0).icon;
-            }
+        int getWeatherIconId() {
+            return Day.Icon;
         }
 
-        public double getMinTemp() {
-            return temp.min;
+        double getMaxTemp() {
+            return Temperature.Maximum.Value;
         }
 
-        public double getMaxTemp() {
-            return temp.max;
+        double getMinTemp() {
+            return Temperature.Minimum.Value;
         }
+
     }
 
-    public List<DayForecast> getForecastList() {
-        if (forecastList == null) {
-            //return an empty list to prevent NPE
-            return new ArrayList<>();
-        } else {
-            return forecastList;
-        }
+    List<DailyForecast> getForecastList() {
+        return DailyForecasts;
     }
 }

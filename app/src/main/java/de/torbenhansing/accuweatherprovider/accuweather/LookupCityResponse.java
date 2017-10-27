@@ -22,11 +22,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LookupCityResponse implements Serializable {
+class LookupCityResponse implements Serializable {
 
     @SerializedName("list")
-    private List<CityInfoResponse> cities;
-    public List<CityInfoResponse> getCityInfoList() {
+    private List<CityInfoResponse> cities = null;
+
+    List<CityInfoResponse> getCityInfoList() {
         if (cities == null) {
             //Return empty list to prevent NPE
             return new ArrayList<>();

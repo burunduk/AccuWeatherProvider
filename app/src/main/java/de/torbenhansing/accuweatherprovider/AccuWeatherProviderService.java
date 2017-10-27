@@ -16,6 +16,7 @@
 
 package de.torbenhansing.accuweatherprovider;
 
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -48,8 +49,8 @@ public class AccuWeatherProviderService extends WeatherProviderService
 
     private AccuWeatherService mAccuWeatherService;
 
-    private Map<ServiceRequest,WeatherUpdateRequestTask> mWeatherUpdateRequestMap = new HashMap<>();
-    private Map<ServiceRequest,LookupCityNameRequestTask> mLookupCityRequestMap = new HashMap<>();
+    private final Map<ServiceRequest,WeatherUpdateRequestTask> mWeatherUpdateRequestMap = new HashMap<>();
+    private final Map<ServiceRequest,LookupCityNameRequestTask> mLookupCityRequestMap = new HashMap<>();
     //OpenWeatherMap recommends to wait 10 min between requests
     private final static long REQUEST_THRESHOLD = 1000L * 60L * 10L;
     private long mLastRequestTimestamp = -REQUEST_THRESHOLD;
@@ -152,12 +153,13 @@ public class AccuWeatherProviderService extends WeatherProviderService
     }
     private boolean isSameWeatherLocation(WeatherLocation newLocation,
             WeatherLocation oldLocation) {
-        if (newLocation == null || oldLocation == null) return false;
-        return (newLocation.getCityId().equals(oldLocation.getCityId())
-                && newLocation.getCity().equals(oldLocation.getCity())
-                && newLocation.getPostalCode().equals(oldLocation.getPostalCode())
-                && newLocation.getCountry().equals(oldLocation.getCountry())
-                && newLocation.getCountryId().equals(oldLocation.getCountryId()));
+        return !(newLocation == null || oldLocation == null) && (
+                newLocation.getCityId().equals(oldLocation.getCityId()) &&
+                newLocation.getCity().equals(oldLocation.getCity()) &&
+                newLocation.getPostalCode().equals(oldLocation.getPostalCode()) &&
+                newLocation.getCountry().equals(oldLocation.getCountry()) &&
+                newLocation.getCountryId().equals(oldLocation.getCountryId())
+        );
     }
 
     private boolean isSameGeoLocation(Location newLocation, Location oldLocation) {
@@ -173,11 +175,12 @@ public class AccuWeatherProviderService extends WeatherProviderService
         return (mLastRequestTimestamp + REQUEST_THRESHOLD > now);
     }
 
+    @SuppressLint("StaticFieldLeak")
     private class WeatherUpdateRequestTask extends AsyncTask<Void, Void, WeatherInfo> {
 
         final private ServiceRequest mRequest;
 
-        public WeatherUpdateRequestTask(ServiceRequest request) {
+        WeatherUpdateRequestTask(ServiceRequest request) {
             mRequest = request;
         }
 
@@ -229,11 +232,12 @@ public class AccuWeatherProviderService extends WeatherProviderService
         }
     }
 
+    @SuppressLint("StaticFieldLeak")
     private class LookupCityNameRequestTask extends AsyncTask<Void, Void, List<WeatherLocation>> {
 
         final private ServiceRequest mRequest;
 
-        public LookupCityNameRequestTask(ServiceRequest request) {
+        LookupCityNameRequestTask(ServiceRequest request) {
             mRequest = request;
         }
 

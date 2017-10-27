@@ -2,32 +2,25 @@ package de.torbenhansing.accuweatherprovider.accuweather;
 
 import java.io.Serializable;
 
-/**
- * Created by tha on 26.10.2017.
- */
+@SuppressWarnings("FieldCanBeLocal")
+class CityInfoResponse implements Serializable {
+    private String Key = "";
+    private String LocalizedName = "";
+    private Country Country = null;
 
-public class CityInfoResponse implements Serializable {
-    private String id = "";
-    private String name = "";
-    private Sys sys;
-
-    static class Sys {
-        private String country = "";
+    private static class Country {
+        private String LocalizedName = "";
     }
 
-    public String getCityId() {
-        return id;
+    String getCityId() {
+        return Key;
     }
 
-    public String getCityName() {
-        return name;
+    String getCityName() {
+        return LocalizedName;
     }
 
-    public String getCountry() {
-        if (sys != null) {
-            return sys.country;
-        } else {
-            return "";
-        }
+    String getCountryName() {
+        return Country.LocalizedName;
     }
 }
