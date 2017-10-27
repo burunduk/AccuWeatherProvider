@@ -14,23 +14,21 @@
  * limitations under the License.
  */
 
-package de.torbenhansing.accuweatherprovider.accuweather;
-
-import android.util.SparseIntArray;
+package de.torbenhansing.accuweatherprovider.accuweather.responses;
 
 import java.io.Serializable;
 
 import cyanogenmod.providers.WeatherContract;
 
 @SuppressWarnings("FieldCanBeLocal")
-class CurrentWeatherResponse implements Serializable {
+public class CurrentWeatherResponse implements Serializable {
     private long EpochTime = -1L;
     private int WeatherIcon = 0;
     private Values Temperature = null;
     private long RelativeHumidity = -1;
     private Wind Wind = null;
 
-    static class Values {
+    private static class Values {
         private Unit Metric = null;
         private Unit Imperial = null;
 
@@ -39,7 +37,7 @@ class CurrentWeatherResponse implements Serializable {
         }
     }
 
-    static class Wind {
+    private static class Wind {
         private Direction Direction = null;
         private Values Speed = null;
 
@@ -48,15 +46,15 @@ class CurrentWeatherResponse implements Serializable {
         }
     }
 
-    long getEpochTime() {
+    public long getEpochTime() {
         return EpochTime;
     }
 
-    int getWeatherIconId() {
+    public int getWeatherIconId() {
         return WeatherIcon;
     }
 
-    double getTemperature(int tempUnit) {
+    public double getTemperature(int tempUnit) {
         if(tempUnit == WeatherContract.WeatherColumns.TempUnit.CELSIUS) {
             return Temperature.Metric.Value;
         } else {
@@ -64,11 +62,11 @@ class CurrentWeatherResponse implements Serializable {
         }
     }
 
-    double getHumidity() {
+    public double getHumidity() {
         return RelativeHumidity / 100;
     }
 
-    double getWindSpeed(int windUnit) {
+    public double getWindSpeed(int windUnit) {
         if (windUnit == WeatherContract.WeatherColumns.WindSpeedUnit.KPH) {
             return Wind.Speed.Metric.Value;
         } else {
@@ -76,7 +74,7 @@ class CurrentWeatherResponse implements Serializable {
         }
     }
 
-    double getWindDirection() {
+    public double getWindDirection() {
         return Wind.Direction.Degrees;
     }
 }

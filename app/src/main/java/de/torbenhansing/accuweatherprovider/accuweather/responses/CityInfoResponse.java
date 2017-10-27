@@ -1,9 +1,9 @@
-package de.torbenhansing.accuweatherprovider.accuweather;
+package de.torbenhansing.accuweatherprovider.accuweather.responses;
 
 import java.io.Serializable;
 
 @SuppressWarnings("FieldCanBeLocal")
-class CityInfoResponse implements Serializable {
+public class CityInfoResponse implements Serializable {
     private String Key = "";
     private String LocalizedName = "";
     private Country Country = null;
@@ -12,15 +12,15 @@ class CityInfoResponse implements Serializable {
         private String LocalizedName = "";
     }
 
-    String getCityId() {
+    public String getCityId() {
         return Key;
     }
 
-    String getCityName() {
+    public String getCityName() {
         return LocalizedName;
     }
 
-    String getCountryName() {
+    public String getCountryName() {
         return Country.LocalizedName;
     }
 }

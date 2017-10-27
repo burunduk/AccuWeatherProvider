@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package de.torbenhansing.accuweatherprovider.accuweather;
+package de.torbenhansing.accuweatherprovider.accuweather.responses;
 
 import java.io.Serializable;
 import java.util.List;
 
-class ForecastResponse implements Serializable {
+public class ForecastResponse implements Serializable {
     private List<DailyForecast> DailyForecasts = null;
 
-    static class DailyForecast {
+    public static class DailyForecast {
         private Temperature Temperature = null;
         private Day Day = null;
 
@@ -39,21 +39,21 @@ class ForecastResponse implements Serializable {
             private int Icon = 0;
         }
 
-        int getWeatherIconId() {
+        public int getWeatherIconId() {
             return Day.Icon;
         }
 
-        double getMaxTemp() {
+        public double getMaxTemp() {
             return Temperature.Maximum.Value;
         }
 
-        double getMinTemp() {
+        public double getMinTemp() {
             return Temperature.Minimum.Value;
         }
 
     }
 
-    List<DailyForecast> getForecastList() {
+    public List<DailyForecast> getForecastList() {
         return DailyForecasts;
     }
 }

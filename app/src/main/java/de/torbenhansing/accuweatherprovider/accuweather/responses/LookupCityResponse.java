@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.torbenhansing.accuweatherprovider.accuweather;
+package de.torbenhansing.accuweatherprovider.accuweather.responses;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -22,12 +22,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-class LookupCityResponse implements Serializable {
+public class LookupCityResponse implements Serializable {
 
     @SerializedName("list")
     private List<CityInfoResponse> cities = null;
 
-    List<CityInfoResponse> getCityInfoList() {
+    public List<CityInfoResponse> getCityInfoList() {
         if (cities == null) {
             //Return empty list to prevent NPE
             return new ArrayList<>();

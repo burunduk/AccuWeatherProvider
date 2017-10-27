@@ -28,7 +28,7 @@
             android:summary="@string/prefscreen_create_key_summary">
 
             <intent android:action="android.intent.action.VIEW"
-                android:data="https://home.openweathermap.org/users/sign_up" />
+                android:data="https://developer.accuweather.com/user/register" />
         </PreferenceScreen>
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/prefscreen_category_about_title">
