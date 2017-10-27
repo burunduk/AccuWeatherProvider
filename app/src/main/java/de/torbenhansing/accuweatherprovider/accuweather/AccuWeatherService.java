@@ -49,7 +49,6 @@ public class AccuWeatherService {
     // we always get the KM/H unit for the wind. The app will make the calculations
     private static final int WIND_UNIT = WeatherContract.WeatherColumns.WindSpeedUnit.KPH;
 
-
     private final AccuWeatherInterface mAccuWeatherInterface;
     private volatile String mApiKey;
     private Context mContext;
@@ -85,8 +84,11 @@ public class AccuWeatherService {
         try {
             Logging.logd(weatherResponseCall.request().toString());
             currentWeatherResponse = weatherResponseCall.execute();
+            if(!currentWeatherResponse.isSuccessful()) {
+                throw new IOException(currentWeatherResponse.message());
+            }
         } catch (IOException e) {
-            //An error occurred while talking to the server
+            Logging.loge("Exception while requesting current weather: " + e);
             return null;
         }
 
@@ -102,7 +104,10 @@ public class AccuWeatherService {
             try {
                 Logging.logd(forecastResponseCall.request().toString());
                 Response<ForecastResponse> r = forecastResponseCall.execute();
-                if (r.code() == 200) forecastResponse = r.body();
+                if(!r.isSuccessful()) {
+                    throw new IOException(r.message());
+                }
+                forecastResponse = r.body();
             } catch (IOException e) {
                 //this is an error we can live with
                 Logging.logd("IOException while requesting forecast " + e);
@@ -127,7 +132,8 @@ public class AccuWeatherService {
 
         String language = getLanguageCode();
         @SuppressLint("DefaultLocale")
-        String lat_long = String.format("%f,%f", location.getLatitude(), location.getLongitude());
+        String lat_long = String.format(Locale.ROOT, "%f,%f",
+                location.getLatitude(), location.getLongitude());
         // First determine the City code for this location
         Call<CityInfoResponse> cityLookupCall = mAccuWeatherInterface.lookupCity(mApiKey,
                 lat_long, language, DETAILS, TOPLEVEL);
@@ -135,6 +141,9 @@ public class AccuWeatherService {
         try {
             Logging.logd(cityLookupCall.request().toString());
             currentCityResponse = cityLookupCall.execute();
+            if(!currentCityResponse.isSuccessful()) {
+                throw new IOException(currentCityResponse.message());
+            }
         } catch (IOException e) {
             Logging.loge("IOException while requesting the current city: " + e);
             return null;
@@ -148,9 +157,12 @@ public class AccuWeatherService {
         try {
             Logging.logd(weatherResponseCall.request().toString());
             currentWeatherResponse = weatherResponseCall.execute();
+            if(!currentWeatherResponse.isSuccessful()) {
+                throw new IOException(currentWeatherResponse.message());
+            }
         } catch (IOException e) {
             //An error occurred while talking to the server
-            Logging.logd("IOException while requesting weather " + e);
+            Logging.loge("Exception while requesting weather " + e);
             return null;
         }
 
@@ -166,10 +178,13 @@ public class AccuWeatherService {
             try {
                 Logging.logd(forecastResponseCall.request().toString());
                 Response<ForecastResponse> r = forecastResponseCall.execute();
-                if (r.code() == 200) forecastResponse = r.body();
+                if(!r.isSuccessful()) {
+                    throw new IOException(r.message());
+                }
+                forecastResponse = r.body();
             } catch (IOException e) {
                 //this is an error we can live with
-                Logging.logd("IOException while requesting forecast " + e);
+                Logging.loge("Exception while requesting forecast " + e);
             }
             return processWeatherResponse(currentCityResponse.body().getCityName(),
                     currentWeatherResponse.body(), forecastResponse, tempUnit);
@@ -256,24 +271,22 @@ public class AccuWeatherService {
         try {
             Logging.logd(lookupCityCall.request().toString());
             lookupResponse = lookupCityCall.execute();
+            if(!lookupResponse.isSuccessful()) {
+                throw new IOException(lookupResponse.message());
+            }
         } catch (IOException e) {
             Logging.loge("IOException while looking up city name " + e);
             //Return empty list to prevent NPE
             return new ArrayList<>();
         }
 
-        if (lookupResponse != null && lookupResponse.code() == 200) {
-            List<WeatherLocation> weatherLocations = new ArrayList<>();
-            for (CityInfoResponse cityInfo: lookupResponse.body().getCityInfoList()) {
-                WeatherLocation location = new WeatherLocation.Builder(cityInfo.getCityId(),
-                        cityInfo.getCityName()).setCountry(cityInfo.getCountryName()).build();
-                weatherLocations.add(location);
-            }
-            return weatherLocations;
-        } else {
-            //Return empty list to prevent NPE
-            return new ArrayList<>();
+        List<WeatherLocation> weatherLocations = new ArrayList<>();
+        for (CityInfoResponse cityInfo: lookupResponse.body().getCityInfoList()) {
+            WeatherLocation location = new WeatherLocation.Builder(cityInfo.getCityId(),
+                    cityInfo.getCityName()).setCountry(cityInfo.getCountryName()).build();
+            weatherLocations.add(location);
         }
+        return weatherLocations;
     }
 
     private Retrofit buildRestAdapter() {
@@ -287,7 +300,7 @@ public class AccuWeatherService {
         Locale locale = mContext.getResources().getConfiguration().locale;
         String country = locale.getCountry();
         String language = locale.getLanguage();
-        return language + "_" + country;
+        return (language + "-" + country).toLowerCase();
     }
 
     public final static class InvalidApiKeyException extends Exception {

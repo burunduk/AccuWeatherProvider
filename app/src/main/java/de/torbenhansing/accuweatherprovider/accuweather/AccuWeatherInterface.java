@@ -29,7 +29,7 @@ public interface AccuWeatherInterface {
     );
 
     @GET("/forecasts/v1/daily/{days}day/{locationKey}")
-    Call<ForecastResponse> queryForecast(@Query("apiKey") String apiKey,
+    Call<ForecastResponse> queryForecast(@Query("apikey") String apiKey,
                                          @Query("locationKey") String cityId,
                                          @Query("days") int daysCount,
                                          @Query("language") String lang,
@@ -38,14 +38,14 @@ public interface AccuWeatherInterface {
     );
 
     @GET("/locations/v1/cities/search")
-    Call<LookupCityResponse> lookupCity(@Query("apiKey") String apiKey,
+    Call<LookupCityResponse> lookupCity(@Query("apikey") String apiKey,
                                         @Query("q") String cityName,
                                         @Query("language") String lang,
                                         @Query("details") boolean details
     );
 
     @GET("/locations/v1/cities/geoposition/search")
-    Call<CityInfoResponse> lookupCity(@Query("apiKey") String apiKey,
+    Call<CityInfoResponse> lookupCity(@Query("apikey") String apiKey,
                                       @Query("q") String lat_long,
                                       @Query("language") String lang,
                                       @Query("details") boolean details,

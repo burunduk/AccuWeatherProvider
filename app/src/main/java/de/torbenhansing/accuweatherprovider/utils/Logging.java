@@ -19,18 +19,18 @@ package de.torbenhansing.accuweatherprovider.utils;
 import android.util.Log;
 
 public class Logging {
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     private static final String TAG = "AccuWeatherProvider";
 
-    public static final void logd(String log) {
+    public static void logd(String log) {
         if (DEBUG) Log.d(TAG, log);
     }
 
-    public static final void logw(String log) {
+    public static void logw(String log) {
         if (DEBUG) Log.w(TAG, log);
     }
 
-    public static final void loge(String log) {
+    public static void loge(String log) {
         //This is an actual error, so it might be important, no check for debug flag
         Log.e(TAG, log);
     }
