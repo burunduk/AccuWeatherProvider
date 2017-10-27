@@ -16,32 +16,38 @@
 
 package de.torbenhansing.accuweatherprovider.accuweather;
 
+import java.util.List;
+
+import de.torbenhansing.accuweatherprovider.accuweather.responses.CityInfoResponse;
+import de.torbenhansing.accuweatherprovider.accuweather.responses.CurrentWeatherResponse;
+import de.torbenhansing.accuweatherprovider.accuweather.responses.ForecastResponse;
 import retrofit2.Call;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface AccuWeatherInterface {
     @GET("/currentconditions/v1/{locationKey}")
-    Call<CurrentWeatherResponse> queryCurrentWeather(@Query("apikey") String apikey,
-                                                     @Query("locationKey") String cityId,
+    Call<CurrentWeatherResponse> queryCurrentWeather(@Path("locationKey") String cityId,
+                                                     @Query("apikey") String apikey,
                                                      @Query("language") String lang,
                                                      @Query("details") boolean details
     );
 
     @GET("/forecasts/v1/daily/{days}day/{locationKey}")
-    Call<ForecastResponse> queryForecast(@Query("apikey") String apiKey,
-                                         @Query("locationKey") String cityId,
-                                         @Query("days") int daysCount,
+    Call<ForecastResponse> queryForecast(@Path("days") int daysCount,
+                                         @Path("locationKey") String cityId,
+                                         @Query("apikey") String apiKey,
                                          @Query("language") String lang,
                                          @Query("details") boolean details,
                                          @Query("metric") boolean metric
     );
 
     @GET("/locations/v1/cities/search")
-    Call<LookupCityResponse> lookupCity(@Query("apikey") String apiKey,
-                                        @Query("q") String cityName,
-                                        @Query("language") String lang,
-                                        @Query("details") boolean details
+    Call<List<CityInfoResponse>> lookupCity(@Query("apikey") String apiKey,
+                                            @Query("q") String cityName,
+                                            @Query("language") String lang,
+                                            @Query("details") boolean details
     );
 
     @GET("/locations/v1/cities/geoposition/search")

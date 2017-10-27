@@ -17,6 +17,7 @@
 package de.torbenhansing.accuweatherprovider.accuweather.responses;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ForecastResponse implements Serializable {
@@ -40,20 +41,26 @@ public class ForecastResponse implements Serializable {
         }
 
         public int getWeatherIconId() {
-            return Day.Icon;
+            return Day != null ? Day.Icon : 0;
         }
 
         public double getMaxTemp() {
+            if(Temperature == null || Temperature.Maximum == null) {
+                return Double.NaN;
+            }
             return Temperature.Maximum.Value;
         }
 
         public double getMinTemp() {
+            if(Temperature == null || Temperature.Minimum == null) {
+                return Double.NaN;
+            }
             return Temperature.Minimum.Value;
         }
 
     }
 
     public List<DailyForecast> getForecastList() {
-        return DailyForecasts;
+        return DailyForecasts != null ? DailyForecasts : new ArrayList<DailyForecast>();
     }
 }

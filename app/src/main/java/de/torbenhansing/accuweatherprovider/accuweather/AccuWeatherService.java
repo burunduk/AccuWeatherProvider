@@ -20,7 +20,10 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.location.Location;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.util.SparseIntArray;
+
+import com.google.gson.JsonParseException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,6 +34,9 @@ import cyanogenmod.providers.CMSettings;
 import cyanogenmod.providers.WeatherContract;
 import cyanogenmod.weather.WeatherInfo;
 import cyanogenmod.weather.WeatherLocation;
+import de.torbenhansing.accuweatherprovider.accuweather.responses.CityInfoResponse;
+import de.torbenhansing.accuweatherprovider.accuweather.responses.CurrentWeatherResponse;
+import de.torbenhansing.accuweatherprovider.accuweather.responses.ForecastResponse;
 import de.torbenhansing.accuweatherprovider.utils.Logging;
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
@@ -63,31 +69,20 @@ public class AccuWeatherService {
         mApiKey = apiKey;
     }
 
-    /**
-     * This is a synchronous call and should never be called from the UI thread
-     * @param weatherLocation The location for which the weather should be requested
-     * @throws InvalidApiKeyException If the application ID has not been set
-     */
-    public WeatherInfo queryWeather(WeatherLocation weatherLocation)
-            throws InvalidApiKeyException {
-
-        if (!maybeValidApiKey(mApiKey)) {
-            throw new InvalidApiKeyException();
-        }
-
+    private WeatherInfo getWeatherForCity(String cityId, String cityName) {
         String language = getLanguageCode();
 
         Call<CurrentWeatherResponse> weatherResponseCall
-                = mAccuWeatherInterface.queryCurrentWeather(mApiKey, weatherLocation.getCityId(),
-                                                            language, DETAILS);
+                = mAccuWeatherInterface.queryCurrentWeather(cityId, mApiKey, language, DETAILS);
         Response<CurrentWeatherResponse> currentWeatherResponse;
         try {
             Logging.logd(weatherResponseCall.request().toString());
             currentWeatherResponse = weatherResponseCall.execute();
+            Logging.logd("CurrentWeatherResponse: " + currentWeatherResponse.raw().toString());
             if(!currentWeatherResponse.isSuccessful()) {
                 throw new IOException(currentWeatherResponse.message());
             }
-        } catch (IOException e) {
+        } catch (IOException | JsonParseException e) {
             Logging.loge("Exception while requesting current weather: " + e);
             return null;
         }
@@ -98,99 +93,52 @@ public class AccuWeatherService {
             final int tempUnit = getTempUnitFromSettings();
             final boolean metric = (tempUnit == WeatherContract.WeatherColumns.TempUnit.CELSIUS);
             Call<ForecastResponse> forecastResponseCall
-                    = mAccuWeatherInterface.queryForecast(mApiKey, weatherLocation.getCityId(),
-                    FORECAST_DAYS, language, DETAILS, metric);
+                    = mAccuWeatherInterface.queryForecast(FORECAST_DAYS, cityId, mApiKey,
+                    language, DETAILS, metric);
             ForecastResponse forecastResponse = null;
             try {
                 Logging.logd(forecastResponseCall.request().toString());
                 Response<ForecastResponse> r = forecastResponseCall.execute();
+                Logging.logd("ForcastResponse: " + r.raw().toString());
                 if(!r.isSuccessful()) {
                     throw new IOException(r.message());
                 }
                 forecastResponse = r.body();
-            } catch (IOException e) {
+            } catch (IOException | JsonParseException e) {
                 //this is an error we can live with
-                Logging.logd("IOException while requesting forecast " + e);
+                Logging.loge("Exception while requesting forecast " + e);
             }
-            return processWeatherResponse(weatherLocation.getCity(),
-                    currentWeatherResponse.body(), forecastResponse, tempUnit);
+            return processWeatherResponse(cityName, currentWeatherResponse.body(),
+                    forecastResponse, tempUnit);
         } else {
             return null;
         }
+
     }
 
-    /**
-     * This is a synchronous call and should never be called from the UI thread
-     * @param location A {@link WeatherInfo} weather info object if the call was successfully
-     *                 processed by the end point, null otherwise
-     * @throws InvalidApiKeyException If the application ID has not been set
-     */
-    public WeatherInfo queryWeather(Location location) throws InvalidApiKeyException {
-        if (!maybeValidApiKey(mApiKey)) {
-            throw new InvalidApiKeyException();
-        }
-
+    private Pair<String, String> getCityForLocation(Location location) {
         String language = getLanguageCode();
         @SuppressLint("DefaultLocale")
         String lat_long = String.format(Locale.ROOT, "%f,%f",
                 location.getLatitude(), location.getLongitude());
         // First determine the City code for this location
         Call<CityInfoResponse> cityLookupCall = mAccuWeatherInterface.lookupCity(mApiKey,
-                lat_long, language, DETAILS, TOPLEVEL);
+                lat_long, language, false, TOPLEVEL);
         Response<CityInfoResponse> currentCityResponse;
         try {
             Logging.logd(cityLookupCall.request().toString());
             currentCityResponse = cityLookupCall.execute();
+            Logging.logd("CurrentCityResponse: " + currentCityResponse.raw().toString());
             if(!currentCityResponse.isSuccessful()) {
                 throw new IOException(currentCityResponse.message());
             }
-        } catch (IOException e) {
-            Logging.loge("IOException while requesting the current city: " + e);
+        } catch (IOException | JsonParseException e) {
+            Logging.loge("Exception while requesting the current city: " + e);
             return null;
         }
         // Now check the weather for this city
-        final String currentCityId = currentCityResponse.body().getCityId();
-        Call<CurrentWeatherResponse> weatherResponseCall
-                = mAccuWeatherInterface.queryCurrentWeather(mApiKey, currentCityId,
-                language, DETAILS);
-        Response<CurrentWeatherResponse> currentWeatherResponse;
-        try {
-            Logging.logd(weatherResponseCall.request().toString());
-            currentWeatherResponse = weatherResponseCall.execute();
-            if(!currentWeatherResponse.isSuccessful()) {
-                throw new IOException(currentWeatherResponse.message());
-            }
-        } catch (IOException e) {
-            //An error occurred while talking to the server
-            Logging.loge("Exception while requesting weather " + e);
-            return null;
-        }
-
-        if (currentWeatherResponse.code() == 200) {
-            //Query the forecast now. We can return a valid WeatherInfo object without the forecast
-            //but the user is expecting both the current weather and the forecast
-            final int tempUnit = getTempUnitFromSettings();
-            final boolean metric = (tempUnit == WeatherContract.WeatherColumns.TempUnit.CELSIUS);
-            Call<ForecastResponse> forecastResponseCall
-                    = mAccuWeatherInterface.queryForecast(mApiKey, currentCityId,
-                    FORECAST_DAYS, language, DETAILS, metric);
-            ForecastResponse forecastResponse = null;
-            try {
-                Logging.logd(forecastResponseCall.request().toString());
-                Response<ForecastResponse> r = forecastResponseCall.execute();
-                if(!r.isSuccessful()) {
-                    throw new IOException(r.message());
-                }
-                forecastResponse = r.body();
-            } catch (IOException e) {
-                //this is an error we can live with
-                Logging.loge("Exception while requesting forecast " + e);
-            }
-            return processWeatherResponse(currentCityResponse.body().getCityName(),
-                    currentWeatherResponse.body(), forecastResponse, tempUnit);
-        } else {
-            return null;
-        }
+        return new Pair<>(currentCityResponse.body().getCityId(),
+                currentCityResponse.body().getCityName());
     }
 
     private WeatherInfo processWeatherResponse(String cityName,
@@ -202,7 +150,7 @@ public class AccuWeatherService {
         if (cityName == null || Double.isNaN(temperature)) return null;
 
         WeatherInfo.Builder builder = new WeatherInfo.Builder(cityName, temperature, tempUnit)
-                        .setTimestamp(currentWeatherResponse.getEpochTime());
+                .setTimestamp(currentWeatherResponse.getEpochTime());
 
         builder.setWeatherCondition(mapConditionIconToCode(
                 currentWeatherResponse.getWeatherIconId()));
@@ -248,8 +196,43 @@ public class AccuWeatherService {
 
             forecastList.add(forecastBuilder.build());
         }
-            builder.setForecast(forecastList);
+        builder.setForecast(forecastList);
         return builder.build();
+    }
+
+    /**
+     * This is a synchronous call and should never be called from the UI thread
+     * @param weatherLocation The location for which the weather should be requested
+     * @throws InvalidApiKeyException If the application ID has not been set
+     */
+    public WeatherInfo queryWeather(WeatherLocation weatherLocation)
+            throws InvalidApiKeyException {
+
+        if (!maybeValidApiKey(mApiKey)) {
+            throw new InvalidApiKeyException();
+        }
+        return getWeatherForCity(weatherLocation.getCityId(), weatherLocation.getCity());
+    }
+
+    /**
+     * This is a synchronous call and should never be called from the UI thread
+     * @param location A {@link WeatherInfo} weather info object if the call was successfully
+     *                 processed by the end point, null otherwise
+     * @throws InvalidApiKeyException If the application ID has not been set
+     */
+    public WeatherInfo queryWeather(Location location) throws InvalidApiKeyException {
+        if (!maybeValidApiKey(mApiKey)) {
+            throw new InvalidApiKeyException();
+        }
+        // First get the city for the given location
+        Pair<String, String> city = getCityForLocation(location);
+        if (city == null) {
+            return null;
+        }
+        String currentCityId = city.first;
+        String currentCityName = city.second;
+        // Now query the weather for this city
+        return getWeatherForCity(currentCityId, currentCityName);
     }
 
     /**
@@ -264,26 +247,31 @@ public class AccuWeatherService {
             throw new InvalidApiKeyException();
         }
 
-        Call<LookupCityResponse> lookupCityCall = mAccuWeatherInterface.lookupCity(mApiKey,
-                cityName, getLanguageCode(), DETAILS);
+        Call<List<CityInfoResponse>> lookupCityCall = mAccuWeatherInterface.lookupCity(mApiKey,
+                cityName, getLanguageCode(), false);
 
-        Response<LookupCityResponse> lookupResponse;
+        Response<List<CityInfoResponse>> lookupResponse;
         try {
             Logging.logd(lookupCityCall.request().toString());
             lookupResponse = lookupCityCall.execute();
+            Logging.logd("LookupCityResponse: " + lookupResponse.raw().toString());
             if(!lookupResponse.isSuccessful()) {
                 throw new IOException(lookupResponse.message());
             }
-        } catch (IOException e) {
+        } catch (IOException | JsonParseException e) {
             Logging.loge("IOException while looking up city name " + e);
             //Return empty list to prevent NPE
             return new ArrayList<>();
         }
 
         List<WeatherLocation> weatherLocations = new ArrayList<>();
-        for (CityInfoResponse cityInfo: lookupResponse.body().getCityInfoList()) {
+        for (CityInfoResponse cityInfo: lookupResponse.body()) {
             WeatherLocation location = new WeatherLocation.Builder(cityInfo.getCityId(),
-                    cityInfo.getCityName()).setCountry(cityInfo.getCountryName()).build();
+                    cityInfo.getCityName())
+                    .setCountry(cityInfo.getCountryName())
+                    .setCountryId(cityInfo.getCountryId())
+                    .setPostalCode(cityInfo.getPostalCode())
+                    .setState(cityInfo.getState()).build();
             weatherLocations.add(location);
         }
         return weatherLocations;

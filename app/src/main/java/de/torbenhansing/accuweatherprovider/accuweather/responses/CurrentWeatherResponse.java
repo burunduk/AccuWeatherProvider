@@ -55,10 +55,13 @@ public class CurrentWeatherResponse implements Serializable {
     }
 
     public double getTemperature(int tempUnit) {
+        if(Temperature == null) {
+            return Double.NaN;
+        }
         if(tempUnit == WeatherContract.WeatherColumns.TempUnit.CELSIUS) {
-            return Temperature.Metric.Value;
+            return Temperature.Metric != null ? Temperature.Metric.Value : Double.NaN;
         } else {
-            return Temperature.Imperial.Value;
+            return Temperature.Imperial != null ? Temperature.Imperial.Value : Double.NaN;
         }
     }
 
@@ -67,14 +70,20 @@ public class CurrentWeatherResponse implements Serializable {
     }
 
     public double getWindSpeed(int windUnit) {
+        if(Wind == null || Wind.Speed == null) {
+            return Double.NaN;
+        }
         if (windUnit == WeatherContract.WeatherColumns.WindSpeedUnit.KPH) {
-            return Wind.Speed.Metric.Value;
+            return Wind.Speed.Metric != null ? Wind.Speed.Metric.Value : Double.NaN;
         } else {
-            return Wind.Speed.Imperial.Value;
+            return Wind.Speed.Imperial != null ? Wind.Speed.Imperial.Value : Double.NaN;
         }
     }
 
     public double getWindDirection() {
+        if(Wind == null || Wind.Direction == null) {
+            return Double.NaN;
+        }
         return Wind.Direction.Degrees;
     }
 }
