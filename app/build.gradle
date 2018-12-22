@@ -1,14 +1,15 @@
 apply plugin: 'com.android.application'
+apply plugin: 'de.undercouch.download'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '26.0.2'
+    compileSdkVersion 27
+    buildToolsVersion '28.0.3'
 
     defaultConfig {
         applicationId "de.torbenhansing.accuweatherprovider"
         minSdkVersion 23
-        targetSdkVersion 25
-        versionCode 1
+        targetSdkVersion 27
+        versionCode 2
         versionName "1.0"
     }
     buildTypes {
@@ -24,9 +25,24 @@ android {
 }
 
 dependencies {
-    compile 'org.lineageos:platform.sdk:8.+'
-    compile 'com.google.code.gson:gson:2.7'
-    compile 'com.squareup.retrofit2:retrofit:2.0.1'
-    compile 'com.squareup.retrofit2:converter-gson:2.0.1'
-    compile 'com.squareup.okhttp3:okhttp:3.2.0'
+    implementation fileTree(dir: 'libs', include: ['lineage-sdk.jar'])
+    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.squareup.retrofit2:retrofit:2.0.1'
+    implementation 'com.squareup.retrofit2:converter-gson:2.0.1'
+    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
 }
+
+ ext {
+     appLibsDir = new File(projectDir.absolutePath + '/libs')
+ }
+
+ task downloadLineageSdk(type: Download) {
+     doFirst {
+         appLibsDir.mkdir()
+     }
+     src 'https://github.com/LineageOS/android_prebuilts_lineage-sdk/raw/lineage-15.1/9/lineage-sdk.jar'
+     dest appLibsDir
+     onlyIfNewer true
+ }
+
+ preBuild.dependsOn downloadLineageSdk
