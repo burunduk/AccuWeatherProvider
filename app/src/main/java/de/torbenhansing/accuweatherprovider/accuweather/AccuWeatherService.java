@@ -30,10 +30,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import cyanogenmod.providers.CMSettings;
-import cyanogenmod.providers.WeatherContract;
-import cyanogenmod.weather.WeatherInfo;
-import cyanogenmod.weather.WeatherLocation;
+import lineageos.providers.LineageSettings;
+import lineageos.providers.WeatherContract;
+import lineageos.weather.WeatherInfo;
+import lineageos.weather.WeatherLocation;
 import de.torbenhansing.accuweatherprovider.accuweather.responses.CityInfoResponse;
 import de.torbenhansing.accuweatherprovider.accuweather.responses.CurrentWeatherResponse;
 import de.torbenhansing.accuweatherprovider.accuweather.responses.ForecastResponse;
@@ -393,9 +393,9 @@ public class AccuWeatherService {
 
     private int getTempUnitFromSettings() {
         try {
-            return CMSettings.Global.getInt(mContext.getContentResolver(),
-                    CMSettings.Global.WEATHER_TEMPERATURE_UNIT);
-        } catch (CMSettings.CMSettingNotFoundException e) {
+            return LineageSettings.Global.getInt(mContext.getContentResolver(),
+                    LineageSettings.Global.WEATHER_TEMPERATURE_UNIT);
+        } catch (LineageSettings.LineageSettingNotFoundException e) {
             //Default to metric
             return WeatherContract.WeatherColumns.TempUnit.CELSIUS;
         }

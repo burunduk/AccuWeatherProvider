@@ -18,7 +18,7 @@ package de.torbenhansing.accuweatherprovider.accuweather.responses;
 
 import java.io.Serializable;
 
-import cyanogenmod.providers.WeatherContract;
+import lineageos.providers.WeatherContract;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class CurrentWeatherResponse implements Serializable {
