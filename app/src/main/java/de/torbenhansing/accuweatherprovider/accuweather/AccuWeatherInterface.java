@@ -28,7 +28,7 @@ import retrofit2.http.Query;
 
 public interface AccuWeatherInterface {
     @GET("/currentconditions/v1/{locationKey}")
-    Call<CurrentWeatherResponse> queryCurrentWeather(@Path("locationKey") String cityId,
+    Call<List<CurrentWeatherResponse>> queryCurrentWeather(@Path("locationKey") String cityId,
                                                      @Query("apikey") String apikey,
                                                      @Query("language") String lang,
                                                      @Query("details") boolean details

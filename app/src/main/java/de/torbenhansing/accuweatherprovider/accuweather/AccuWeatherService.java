@@ -72,12 +72,14 @@ public class AccuWeatherService {
     private WeatherInfo getWeatherForCity(String cityId, String cityName) {
         String language = getLanguageCode();
 
-        Call<CurrentWeatherResponse> weatherResponseCall
+        Call<List<CurrentWeatherResponse>> weatherResponseCall
                 = mAccuWeatherInterface.queryCurrentWeather(cityId, mApiKey, language, DETAILS);
-        Response<CurrentWeatherResponse> currentWeatherResponse;
+        Response<List<CurrentWeatherResponse>> currentWeatherResponse;
+
         try {
-            Logging.logd(weatherResponseCall.request().toString());
+            Logging.logd("CurrentWeatherCall: " + weatherResponseCall.request().toString());
             currentWeatherResponse = weatherResponseCall.execute();
+
             Logging.logd("CurrentWeatherResponse: " + currentWeatherResponse.raw().toString());
             if(!currentWeatherResponse.isSuccessful()) {
                 throw new IOException(currentWeatherResponse.message());
@@ -97,7 +99,7 @@ public class AccuWeatherService {
                     language, DETAILS, metric);
             ForecastResponse forecastResponse = null;
             try {
-                Logging.logd(forecastResponseCall.request().toString());
+                Logging.logd("ForcastResponseCall: " + forecastResponseCall.request().toString());
                 Response<ForecastResponse> r = forecastResponseCall.execute();
                 Logging.logd("ForcastResponse: " + r.raw().toString());
                 if(!r.isSuccessful()) {
@@ -108,7 +110,7 @@ public class AccuWeatherService {
                 //this is an error we can live with
                 Logging.loge("Exception while requesting forecast " + e);
             }
-            return processWeatherResponse(cityName, currentWeatherResponse.body(),
+            return processWeatherResponse(cityName, currentWeatherResponse.body().get(0),
                     forecastResponse, tempUnit);
         } else {
             return null;
@@ -126,7 +128,7 @@ public class AccuWeatherService {
                 lat_long, language, false, TOPLEVEL);
         Response<CityInfoResponse> currentCityResponse;
         try {
-            Logging.logd(cityLookupCall.request().toString());
+            Logging.logd("CurrentCityCall: " + cityLookupCall.request().toString());
             currentCityResponse = cityLookupCall.execute();
             Logging.logd("CurrentCityResponse: " + currentCityResponse.raw().toString());
             if(!currentCityResponse.isSuccessful()) {
@@ -148,9 +150,9 @@ public class AccuWeatherService {
         final double temperature = currentWeatherResponse.getTemperature(tempUnit);
         //We need at least the city name and current temperature
         if (cityName == null || Double.isNaN(temperature)) return null;
-
         WeatherInfo.Builder builder = new WeatherInfo.Builder(cityName, temperature, tempUnit)
                 .setTimestamp(currentWeatherResponse.getEpochTime());
+
 
         builder.setWeatherCondition(mapConditionIconToCode(
                 currentWeatherResponse.getWeatherIconId()));
@@ -252,7 +254,7 @@ public class AccuWeatherService {
 
         Response<List<CityInfoResponse>> lookupResponse;
         try {
-            Logging.logd(lookupCityCall.request().toString());
+            Logging.logd("LookupCityCall: " + lookupCityCall.request().toString());
             lookupResponse = lookupCityCall.execute();
             Logging.logd("LookupCityResponse: " + lookupResponse.raw().toString());
             if(!lookupResponse.isSuccessful()) {

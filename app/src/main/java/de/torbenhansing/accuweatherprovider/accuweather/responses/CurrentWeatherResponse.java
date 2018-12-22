@@ -47,7 +47,8 @@ public class CurrentWeatherResponse implements Serializable {
     }
 
     public long getEpochTime() {
-        return EpochTime;
+        //EpochTime convert from ms to ns
+        return EpochTime * 1000;
     }
 
     public int getWeatherIconId() {
@@ -66,7 +67,7 @@ public class CurrentWeatherResponse implements Serializable {
     }
 
     public double getHumidity() {
-        return RelativeHumidity / 100;
+        return RelativeHumidity ;
     }
 
     public double getWindSpeed(int windUnit) {
